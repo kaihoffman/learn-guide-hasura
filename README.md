@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Civo managed Kubernetes is currently in beta, and has a number of applications on the Kubernetes marketplace that can be easily installed on a cluster. At the time of me writing this guide, Hasura is not yet on the marketplace, so I wrote this guide to mount Hasura in the Civo k3s service. I hope you find it useful!
+Civo managed Kubernetes is currently in beta, and has a number of applications on the Kubernetes marketplace that can be easily installed on a cluster. At the time of me writing this guide, Hasura is not (yet) avialable on the marketplace, so I wrote this guide to mount Hasura in the Civo k3s service. I hope you find it useful!
 
 If you are not yet a member of the Civo Kubernetes #KUBE100 beta, you can [apply to join here](https://www.civo.com/kube100). All testers get a monthly allowance of $70 for the duration of the beta in exchange for their feedback.
 
@@ -12,7 +12,7 @@ According to the official site:
 
 > Hasura is an [open source](https://github.com/hasura/graphql-engine) engine that connects to your databases & microservices and instantly gives you a production-ready GraphQL API. Usable for new & existing applications, and auto-scalable.
 
-So essentially, Hasura allows us to use GraphQL to query data. That's handy!
+So essentially, Hasura allows us to use GraphQL to query data in databases. That's handy!
 
 ## Deployment
 
@@ -149,7 +149,9 @@ spec:
           servicePort: hasura-port
 ```
 
-Now only that remains will be to visit our cluster URL (in the format `64515915-f40a-460f-bea6-bcfa16af1752.k8s.civo.com` and displayed on the cluster administration page). Now we will do some tests to see that everything is working fine.
+## Hasura Usage
+
+Now only that remains will be to visit our cluster URL (in the format `64515915-f40a-460f-bea6-bcfa16af1752.k8s.civo.com` and displayed on the cluster administration page). In this section, we will do some tests to see that everything is working as expected.
 
 And if all went well then we will see this:
 
@@ -159,7 +161,7 @@ This page will accept our password, the one we declared in the `deployment.yaml`
 
 ![hasura-3](https://drive.google.com/uc?id=1Z0Tztepc8gD1Y3sFiIpCDPMQjjBLK0ip)
 
-Now we go to the `DATA` tab and click on the `SQL` link then in the console that comes out we paste this:
+Now we go to the `DATA` tab and click on the `SQL` link. Then, in the raw SQL console that comes out we paste this and press `Run!`:
 
 ```sql
 CREATE TABLE todo_list (id INTEGER PRIMARY KEY, item TEXT, minutes INTEGER);
@@ -172,4 +174,8 @@ After this we return to the `GRAPHIQL` tab and we will see that we can already c
 
 ![hasura-4](https://drive.google.com/uc?id=1HhnI2Pg7yWax-1iokNiCel3b0DLjVO0t)
 
-Well this is a simple example of what you can do with hasura also works for existing databases, I hope it has served them something and it only remains to play with it for a while.
+## Conclusion
+
+While this is a simple example of what you can do with Hasura once deployed, it also works for existing databases. That means you can use the GraphQL API provided by Hasura to query any SQL database you may have. By adapting the above instructions, you could easily connect an existing database, or play with the one we have created in this exercise to get to grips with Hasura syntax. Let us know what you get up to!
+
+Have you deployed Hasura to query your databases? Let [me](https://www.twitter.com/alejandrojnm) and [@civocloud](https://www.twitter.com/civocloud) on Twitter know!
