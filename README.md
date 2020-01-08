@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Civo managed Kubernetes is currently in beta, and has a number of applications on the Kubernetes marketplace that can be easily installed on a cluster. At the time of me writing this guide, Hasura is not (yet) avialable on the marketplace, so I wrote this guide to mount Hasura in the Civo k3s service. I hope you find it useful!
+Civo managed Kubernetes is currently in beta, and has a number of applications on the Kubernetes marketplace that can be easily installed on a cluster. At the time of me writing this guide, Hasura is not (yet) available on the marketplace, so I wrote this guide to set up Hasura in the Civo `k3s` service. I hope you find it useful!
 
 If you are not yet a member of the Civo Kubernetes #KUBE100 beta, you can [apply to join here](https://www.civo.com/kube100). All testers get a monthly allowance of $70 for the duration of the beta in exchange for their feedback.
 
@@ -17,14 +17,16 @@ So essentially, Hasura allows us to use GraphQL to query data in databases. That
 ## Deployment
 
 As mentioned above, you will need a [Civo](https://www.civo.com) account with Kubernetes access. Once you are logged in, navigate to the Kubernetes menu to create a new cluster. In my case, I am creating a 3-node cluster of Medium-sized nodes (2 CPU, 4GB, 50GB storage each):
-![Hasura cluster creation](hasura1.png)
+
+![Hasura cluster creation](https://civo-com-assets.ams3.digitaloceanspaces.com/content_images/523.blog.png?1578496393)
 
 When you scroll down to the Marketplace section, select PostgreSQL with a 5GB storage option. Then you are ready to start your cluster!
 
 ![Postgresql](https://drive.google.com/uc?id=1_hmQ-PWQ26mF3DbZ6GJsnfPZWloiu9hb)
 
 Once the cluster is running, we will need to download the KUBECONFIG so we can create a user for Hasura and the database. You can do this from the web UI, or using the CLI. The web UI has this option. Save it and set `kubectl` to use it - if this is your only cluster you can save the resulting file as `~/.kube/config`, or if you are running multiple clusters, [follow these instructions](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/).
-![Kubeconfig download](hasura-kubeconfig-dl.png)
+
+![Kubeconfig download](https://civo-com-assets.ams3.digitaloceanspaces.com/content_images/526.blog.png?1578496421)
 
 The first thing will be to make sure we set up external access to our database. Create a file called `postgresql-service.yaml` that contains the following:
 
