@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: hasura-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: ba5e12cc-f396-4ca9-92fb-180715a471f0.k8s.civo.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: hasura-service
+          servicePort: hasura-port

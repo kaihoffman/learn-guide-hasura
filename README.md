@@ -12,15 +12,40 @@ According to the official site:
 
 > Hasura is an [open source](https://github.com/hasura/graphql-engine) engine that connects to your databases & microservices and instantly gives you a production-ready GraphQL API. Usable for new & existing applications, and auto-scalable.
 
+So essentially, Hasura allows us to use GraphQL to query data. That's handy!
+
 ## Deployment
 
-For the deployment we will follow [these steps](https://www.civo.com/learn/install-argo-cd-in-k3s-civo-cloud-for-deploy-applications#deployment), the only difference is that we will choose in the marketplace the Postgres app
+As mentioned above, you will need a [Civo](https://www.civo.com) account with Kubernetes access. Once you are logged in, navigate to the Kubernetes menu to create a new cluster. In my case, I am creating a 3-node cluster of Medium-sized nodes (2 CPU, 4GB, 50GB storage each):
+![Hasura cluster creation](hasura1.png)
 
-![](https://drive.google.com/uc?id=1_hmQ-PWQ26mF3DbZ6GJsnfPZWloiu9hb)
+When you scroll down to the Marketplace section, select PostgreSQL with a 5GB storage option. Then you are ready to start your cluster!
+
+![Postgresql](https://drive.google.com/uc?id=1_hmQ-PWQ26mF3DbZ6GJsnfPZWloiu9hb)
 
 Once the cluster is running, we will need to download the KUBECONFIG so we can create a user for Hasura and the database. You can do this from the web UI, or using the CLI. The web UI has this option. Save it and set `kubectl` to use it - if this is your only cluster you can save the resulting file as `~/.kube/config`, or if you are running multiple clusters, [follow these instructions](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/).
+![Kubeconfig download](hasura-kubeconfig-dl.png)
 
-The first thing will be to connect to the Postgres server within k3s and activate it:
+The first thing will be to make sure we set up external access to our database. Create a file called `postgresql-service.yaml` that contains the following:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-service
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    app: postgresql
+```
+
+Then, apply it to your cluster with `kubectl apply -f postgresql-service.yaml`.
+
+Next, connect to the Postgres server within k3s and activate it:
 
 ````bash
 kubectl run tmp-shell --generator=run-pod/v1 --rm -i --tty --image alpine -- /bin/sh
@@ -34,7 +59,7 @@ apk add postgresql-client
 psql -U $user -h postgresql postgresdb
 ```
 
-Please note that the `$user` in the above example is given to us us by the Civo UI to connect to the postgres instance so you will need to substitute the generated value for the $user. This will ask us for a password which is given in the UI as well. Once connected to Postgres we run these commands to create a user for hasura and our db also. That user will be given `SUPERUSER` permissions in this way so you can create the schemas that you need within our database:
+Please note that the `$user` in the above example is given to us by the Civo UI. You will need to substitute the generated value for the $user. This will ask us for a password which is given in the UI as well. Once connected to Postgres we run these commands to create a user for hasura in our database as well. That user will be given `SUPERUSER` permissions in this way so you can create the schemas that you need within our database:
 
 ```sql
 CREATE DATABASE todo;
@@ -42,9 +67,11 @@ CREATE USER hasura WITH ENCRYPTED PASSWORD 'hasuradb';
 ALTER USER hasura WITH SUPERUSER;
 ```
 
-Once I do this then we will deploy hasura in our cluster of `k3s`:beer: for them we can go to the hasura site in [GitHub](https://github.com/hasura/graphql-engine/tree/master/install-manifests/kubernetes) to download the yaml, in our case I will put them here to make some modifications.
+You can then exit from the Postgresql administrator by typing `\q` and Enter.
 
-First we will create `deployment.yaml` that will contain this:
+Once this is done, we will deploy Hasura in our `k3s` cluster. The full instructions are on the Hasura repository on [GitHub](https://github.com/hasura/graphql-engine/tree/master/install-manifests/kubernetes). For default values, you can download the yaml file, but in our case I will put them below as I have made some modifications.
+
+First, create a `deployment.yaml` that contains this:
 
 ```yaml
 apiVersion: apps/v1
@@ -76,14 +103,14 @@ spec:
         - name: HASURA_GRAPHQL_ENABLE_CONSOLE
           value: "true"
         - name: HASURA_GRAPHQL_ADMIN_SECRET
-          value: supersecretpassword
+          value: supersecretpassword # Change this to your password!
         ports:
         - containerPort: 8080
           protocol: TCP
         resources: {}
 ```
 
-then `svc.yml` that will contain this:
+then `svc.yaml` that will contain this:
 
 ```yaml
 apiVersion: v1
@@ -101,7 +128,7 @@ spec:
     app: hasura
 ```
 
-and finally our ingress that will be this way:
+and finally our `ingress.yaml` that will be along these lines. Please note that you will need to change the `host` line to reflect the DNS entry provided by the Civo Kubernetes UI for your cluster:
 
 ```yaml
 apiVersion: extensions/v1beta1
@@ -113,7 +140,7 @@ metadata:
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
-  - host: 64515915-f40a-460f-bea6-bcfa16af1752.k8s.civo.com
+  - host: 64515915-f40a-460f-bea6-bcfa16af1752.k8s.civo.com # change this!
     http:
       paths:
       - path: /
@@ -122,26 +149,26 @@ spec:
           servicePort: hasura-port
 ```
 
-Now only that remains will be to visit our url `64515915-f40a-460f-bea6-bcfa16af1752.k8s.civo.com` which in your case should be modified by those given by the UI of Civo when the cluster was created. Now we will do some tests to see that everything is working fine.
+Now only that remains will be to visit our cluster URL (in the format `64515915-f40a-460f-bea6-bcfa16af1752.k8s.civo.com` and displayed on the cluster administration page). Now we will do some tests to see that everything is working fine.
 
 And if all went well then we will see this:
 
 ![hasura-2](https://drive.google.com/uc?id=1wSbUZUl1F7Jm5IV6-VdbjRI2bkJxbSAZ)
 
-there we put our password, the one we declared in the `deployment.yaml` and we must load the UI of hasura, which would be this:
+This page will accept our password, the one we declared in the `deployment.yaml` file. Enter it and load the Hasura UI, which should be this:
 
 ![hasura-3](https://drive.google.com/uc?id=1Z0Tztepc8gD1Y3sFiIpCDPMQjjBLK0ip)
 
-Now we go to the `DATA` tab and click on the` SQL` link then in the console that comes out we paste this:
+Now we go to the `DATA` tab and click on the `SQL` link then in the console that comes out we paste this:
 
 ```sql
 CREATE TABLE todo_list (id INTEGER PRIMARY KEY, item TEXT, minutes INTEGER);
-INSERT INTO todo_list VALUES (1, 'Wash the dishe', 15);
+INSERT INTO todo_list VALUES (1, 'Wash the dishes', 15);
 INSERT INTO todo_list VALUES (2, 'vacuuming', 20);
-INSERT INTO todo_list VALUES (3, 'Learn some stuff on KA', 30);
+INSERT INTO todo_list VALUES (3, 'Learn about k3s on Civo', 30);
 ```
 
-After this we return to the `GRAPHIQL` tab and we will see that we can already query about our new table, it would look like this:
+After this we return to the `GRAPHIQL` tab and we will see that we can already create queries about our new table. Select all relevant items (`id`, `item`, and `minutes`) and hit `Execute Query`. The result should look like this:
 
 ![hasura-4](https://drive.google.com/uc?id=1HhnI2Pg7yWax-1iokNiCel3b0DLjVO0t)
 
