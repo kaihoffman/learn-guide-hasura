@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Civo managed Kubernetes is currently in beta, and has a number of applications on the Kubernetes marketplace that can be easily installed on a cluster. At the time of me writing this guide, Hasura is not (yet) available on the marketplace, so I wrote this guide to set up Hasura in the Civo `k3s` service. I hope you find it useful!
+[Civo managed Kubernetes](https://www.civo.com/blog/kube100-is-here) is currently in beta, and has a number of applications on the Kubernetes marketplace that can be easily installed on a cluster. At the time of me writing this guide, Hasura is not (yet) available on the marketplace, so I wrote this guide to set up Hasura in the Civo `k3s` service. I hope you find it useful!
 
 If you are not yet a member of the Civo Kubernetes #KUBE100 beta, you can [apply to join here](https://www.civo.com/kube100). All testers get a monthly allowance of $70 for the duration of the beta in exchange for their feedback.
 
