@@ -157,11 +157,11 @@ Now only that remains will be to visit our cluster URL (in the format `64515915-
 
 And if all went well then we will see this:
 
-![hasura-2](https://drive.google.com/uc?id=1wSbUZUl1F7Jm5IV6-VdbjRI2bkJxbSAZ)
+![Hasura Login](https://civo-com-assets.ams3.digitaloceanspaces.com/content_images/535.blog.png?1578578743)
 
-This page will accept our password, the one we declared in the `deployment.yaml` file. Enter it and load the Hasura UI, which should be this:
+This page will accept our password, the one we declared in the `deployment.yaml` file. Enter it and load the Hasura UI, which should look like this:
 
-![hasura-3](https://drive.google.com/uc?id=1Z0Tztepc8gD1Y3sFiIpCDPMQjjBLK0ip)
+![Hasura Dashboard](https://civo-com-assets.ams3.digitaloceanspaces.com/content_images/532.blog.png?1578578720)
 
 Now we go to the `DATA` tab and click on the `SQL` link. Then, in the raw SQL console that comes out we paste this and press `Run!`:
 
@@ -174,7 +174,7 @@ INSERT INTO todo_list VALUES (3, 'Learn about k3s on Civo', 30);
 
 After this we return to the `GRAPHIQL` tab and we will see that we can already create queries about our new table. Select all relevant items (`id`, `item`, and `minutes`) and hit `Execute Query`. The result should look like this:
 
-![hasura-4](https://drive.google.com/uc?id=1HhnI2Pg7yWax-1iokNiCel3b0DLjVO0t)
+![hasura-4](https://civo-com-assets.ams3.digitaloceanspaces.com/content_images/529.blog.png?1578578691)
 
 ## Conclusion
 
