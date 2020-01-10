@@ -24,7 +24,7 @@ When you scroll down to the Marketplace section, select PostgreSQL with a 5GB st
 
 ![Postgresql](https://drive.google.com/uc?id=1_hmQ-PWQ26mF3DbZ6GJsnfPZWloiu9hb)
 
-Once the cluster is running, we will need to download the KUBECONFIG so we can create a user for Hasura and the database. You can do this from the web UI, or using the CLI. The web UI has this option. Save it and set `kubectl` to use it - if this is your only cluster you can save the resulting file as `~/.kube/config`, or if you are running multiple clusters, [follow these instructions](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/).
+Once the cluster is running, we will need to download the KUBECONFIG so we can create a user for Hasura and the database. You can do this from the web UI, or using the CLI. The web UI has this option, shown below. Save it and set `kubectl` to use it - if this is your only cluster you can save the resulting file as `~/.kube/config`, or if you are running multiple clusters, [follow these instructions](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/).
 
 ![Kubeconfig download](https://civo-com-assets.ams3.digitaloceanspaces.com/content_images/526.blog.png?1578496421)
 
@@ -61,12 +61,15 @@ apk add postgresql-client
 psql -U $user -h postgresql postgresdb
 ```
 
-Please note that the `$user` in the above example is given to us by the Civo UI. You will need to substitute the generated value for the $user. This will ask us for a password which is given in the UI as well. Once connected to Postgres we run these commands to create a user for hasura in our database as well. That user will be given `SUPERUSER` permissions in this way so you can create the schemas that you need within our database:
+Please note that the `$user` in the above example is given to us by the Civo UI. You will need to substitute the generated value for the $user. This will ask us for a password which is given in the UI as well. Once connected to Postgres we run these commands to create a user for hasura in our database as well. We will then connect to our database and enable a cryptographic extension `pgcrypt` required by Hasura:
 
 ```sql
 CREATE DATABASE todo;
 CREATE USER hasura WITH ENCRYPTED PASSWORD 'hasuradb';
-ALTER USER hasura WITH SUPERUSER;
+\c todo;
+CREATE extension IF NOT EXISTS pgcrypto;
+\q
+
 ```
 
 You can then exit from the Postgresql administrator by typing `\q` and Enter.
@@ -153,7 +156,7 @@ spec:
 
 ## Hasura Usage
 
-Now only that remains will be to visit our cluster URL (in the format `64515915-f40a-460f-bea6-bcfa16af1752.k8s.civo.com` and displayed on the cluster administration page). In this section, we will do some tests to see that everything is working as expected.
+Now only that remains will be to visit our cluster URL (in the format `64515915-f40a-460f-bea6-bcfa16af1752.k8s.civo.com` and displayed on the cluster administration page) at port 8080, as defined above. In this section, we will do some tests to see that everything is working as expected.
 
 And if all went well then we will see this:
 
