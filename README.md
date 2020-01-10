@@ -28,25 +28,6 @@ Once the cluster is running, we will need to download the KUBECONFIG so we can c
 
 ![Kubeconfig download](https://civo-com-assets.ams3.digitaloceanspaces.com/content_images/526.blog.png?1578496421)
 
-The first thing will be to make sure we set up external access to our database. Create a file called `postgresql-service.yaml` that contains the following:
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgresql-service
-spec:
-  type: LoadBalancer
-  ports:
-    - port: 5432
-      targetPort: 5432
-      protocol: TCP
-  selector:
-    app: postgresql
-```
-
-Then, apply it to your cluster with `kubectl apply -f postgresql-service.yaml`.
-
 Next, connect to the Postgres server within k3s and activate it:
 
 ````bash
@@ -66,10 +47,18 @@ Please note that the `$user` in the above example is given to us by the Civo UI.
 ```sql
 CREATE DATABASE todo;
 CREATE USER hasura WITH ENCRYPTED PASSWORD 'hasuradb';
+CREATE SCHEMA hdb_catalog;
+CREATE SCHEMA hdb_views;
+ALTER SCHEMA hdb_catalog OWNER TO hasura;
+ALTER SCHEMA hdb_views OWNER TO hasura;
+GRANT SELECT ON all tables IN SCHEMA information_schema TO hasura ;
+GRANT SELECT ON all tables IN SCHEMA pg_catalog TO hasura ;
+GRANT usage ON SCHEMA public TO hasura;
+GRANT all ON all tables IN SCHEMA public TO hasura ;
+GRANT all ON all sequences IN SCHEMA public TO hasura ;
+grant all privileges on database todo to hasura ;
 \c todo;
 CREATE extension IF NOT EXISTS pgcrypto;
-\q
-
 ```
 
 You can then exit from the Postgresql administrator by typing `\q` and Enter.
